@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ER to Relational Schema Generator</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>ER → Relational Schema Generator</h1>
+    <p>Design your ER model and automatically generate a relational schema</p>
+</header>
+
+
+<div class="container">
+    <aside class="sidebar">
+
+        <div class="form-section">
+
+            <h2>Add Entity</h2>
+
+            <label for="entityName">Entity Name</label>
+
+            <input
+                type="text"
+                id="entityName"
+                placeholder="Example: Student"
+            >
+
+            <label for="attributeName">Attribute Name</label>
+
+            <input
+                type="text"
+                id="attributeName"
+                placeholder="Example: Student_ID"
+            >
+
+            <label for="attributeType">Attribute Type</label>
+
+            <select id="attributeType">
+                <option value="INT">INT</option>
+                <option value="VARCHAR(100)">VARCHAR(100)</option>
+                <option value="DATE">DATE</option>
+                <option value="FLOAT">FLOAT</option>
+                <option value="BOOLEAN">BOOLEAN</option>
+            </select>
+            
+<label for="attributeCategory">Attribute Category</label>
+<select id="attributeCategory">
+    <option value="simple">● Simple</option>
+    <option value="composite">▣ Composite</option>
+    <option value="multivalued">◎ Multivalued</option>
+    <option value="derived">◌ Derived</option>
+</select>
+
+<div id="categoryHint" class="category-hint"></div>
+
+<!-- Sub-attributes (only shown for Composite) -->
+<div id="subAttributeSection" class="sub-attribute-section" style="display:none;">
+
+    <label for="subAttributeName">Sub-attributes of this composite attribute</label>
+
+    <input
+        type="text"
+        id="subAttributeName"
+        placeholder="Example: First_Name"
+    >
+
+    <select id="subAttributeType">
+        <option value="INT">INT</option>
+        <option value="VARCHAR(100)">VARCHAR(100)</option>
+        <option value="DATE">DATE</option>
+        <option value="FLOAT">FLOAT</option>
+        <option value="BOOLEAN">BOOLEAN</option>
+    </select>
+
+    <button type="button" class="secondary-btn" onclick="addSubAttribute()">
+        + Add Sub-attribute
+    </button>
+
+    <div id="subAttributeList" class="sub-attribute-list"></div>
+
+</div>
+
+<label class="checkbox-label">
+    <input type="checkbox" id="candidateKey">
+    Candidate Key
+</label>
+
+<label class="checkbox-label">
+    <input type="checkbox" id="uniqueAttribute">
+    Unique Attribute
+</label>
+
+
+            <label class="checkbox-label">
+                <input type="checkbox" id="primaryKey">
+                Primary Key
+            </label>
+
+            <button class="primary-btn" onclick="addAttribute()">
+                Add Attribute
+            </button>
+
+            <button class="secondary-btn" onclick="createEntity()">
+                Create Entity
+            </button>
+
+        </div>
+
+
+        <hr>
+        <div class="form-section">
+
+            <h2>Add Relationship</h2>
+
+            <label for="relationshipName">
+                Relationship Name
+            </label>
+
+            <input
+                type="text"
+                id="relationshipName"
+                placeholder="Example: Enrolls"
+            >
+
+            <label for="entityA">
+                First Entity
+            </label>
+
+            <select id="entityA">
+                <option value="">Select Entity</option>
+            </select>
+
+            <label for="entityB">
+                Second Entity
+            </label>
+
+            <select id="entityB">
+                <option value="">Select Entity</option>
+            </select>
+
+            <label for="cardinality">
+                Cardinality
+            </label>
+
+            <select id="cardinality">
+                <option value="1:1">1 : 1</option>
+                <option value="1:N">1 : N</option>
+                <option value="M:N">M : N</option>
+            </select>
+
+            <button
+                class="primary-btn"
+                onclick="createRelationship()">
+
+                Add Relationship
+
+            </button>
+
+        </div>
+
+
+        <hr>
+
+
+        <button class="secondary-btn" onclick="loadExample()">✨ Load Example (Student – Course)</button>
+
+        <label class="checkbox-label">
+            <input type="checkbox" id="autoSchema" checked>
+            Live update schema &amp; SQL
+        </label>
+
+        <button class="generate-btn" style="margin-top:14px;"
+            onclick="generateSchema()">
+
+            ⚙ Generate Schema & SQL
+
+        </button>
+
+    </aside>
+
+
+    <main class="main">
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>ER Diagram</h2>
+
+                    <p>
+                        Automatically generated Entity-Relationship diagram
+                    </p>
+                </div>
+
+                <span class="badge">
+                    ER MODEL
+                </span>
+
+            </div>
+
+
+            <div class="attribute-legend">
+                <strong>Attribute key:</strong>
+                <span><b class="cat-simple">●</b> Simple</span>
+                <span><b class="cat-composite">▣</b> Composite</span>
+                <span><b class="cat-multivalued">◎</b> Multivalued</span>
+                <span><b class="cat-derived">◌</b> Derived</span>
+                <span><b class="legend-tag">CK</b> Candidate key</span>
+                <span><b class="legend-tag">UQ</b> Unique</span>
+            </div>
+
+            <div class="diagram-container">
+
+                <svg
+                    id="erDiagram"
+                    width="100%"
+                    height="600">
+
+                </svg>
+
+            </div>
+
+        </section>
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Entities</h2>
+
+                    <p>
+                        Entities and their attributes
+                    </p>
+                </div>
+
+                <span class="badge">
+                    ENTITIES
+                </span>
+
+            </div>
+
+
+            <div id="entities">
+
+                <div class="empty">
+                    No entities created yet.
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Relationships</h2>
+
+                    <p>
+                        Connections between entities
+                    </p>
+                </div>
+
+                <span class="badge">
+                    RELATIONSHIPS
+                </span>
+
+            </div>
+
+
+            <div id="relationships">
+
+                <div class="empty">
+                    No relationships created yet.
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>Relational Schema</h2>
+
+                    <p>
+                        Automatically generated relational model
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div id="schema" class="output-box">
+
+                Schema will appear here...
+
+            </div>
+
+        </section>
+
+
+        <section class="section">
+
+            <div class="section-header">
+                <div>
+                    <h2>How Your ER Model Was Converted</h2>
+                    <p>Plain-English explanation of every transformation applied</p>
+                </div>
+                <span class="badge">CONVERSION NOTES</span>
+            </div>
+
+            <div id="conversionNotes" class="notes-box">
+                <div class="empty">Generate the schema to see the conversion steps.</div>
+            </div>
+
+        </section>
+
+        <section class="section">
+
+            <div class="section-header">
+
+                <div>
+                    <h2>SQL Preview</h2>
+
+                    <p>
+                        Generated SQL CREATE TABLE statements
+                    </p>
+                </div>
+
+                <div class="btn-row">
+                    <button class="copy-btn" onclick="copySQL()">Copy SQL</button>
+                    <button class="copy-btn" onclick="downloadSQL()">⬇ Download .sql</button>
+                </div>
+
+            </div>
+
+
+            <div id="sql" class="output-box">
+
+                SQL will appear here...
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
